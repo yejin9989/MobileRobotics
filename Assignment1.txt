@@ -1,0 +1,46 @@
+package test;
+import lejos.hardware.*;
+import lejos.hardware.Button;
+import lejos.hardware.motor.Motor;
+import lejos.utility.Delay;
+
+public class Assignment1 {
+	public static void main(String[] args) {
+		int speed = 720;
+		int delay = 1000;
+		part1();
+		moveForward(speed, delay);
+		turnRight(270);
+		moveForward(speed, delay);
+		turnLeft(270);
+		moveBackward(speed, delay);
+	}
+	public static void part1(){
+		System.out.println("Assignment 1");
+		Button.waitForAnyPress();
+	}
+	public static void moveForward(int x, int d){
+		Motor.A.setSpeed(x);
+		Motor.B.setSpeed(x);
+		Motor.A.backward();
+		Motor.B.backward();
+		Delay.msDelay(d);
+	}
+	public static void turnRight(int x) {
+		Motor.A.rotate(x);
+	}
+	public static void turnLeft(int x) {
+		Motor.B.rotate(x);
+	}
+	public static void moveBackward(int x, int d){
+		Motor.A.setSpeed(x);
+		Motor.B.setSpeed(x);
+		Motor.A.forward();
+		Motor.B.forward();
+		Delay.msDelay(d);
+	}
+	public static void hit() {
+		touchsensor = EV3TouchSensor(4);
+		
+	}
+}
