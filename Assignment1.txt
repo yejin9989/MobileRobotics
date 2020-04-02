@@ -1,46 +1,163 @@
-package test;
-import lejos.hardware.*;
+/*
+ * Marcel Kowalczyk  = c16478546
+ * Yejin Lee	= D19127313
+ */
+
+package ca;
+
 import lejos.hardware.Button;
 import lejos.hardware.motor.Motor;
+import lejos.hardware.port.SensorPort;
+import lejos.hardware.sensor.*;
+import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 
-public class Assignment1 {
-	public static void main(String[] args) {
-		int speed = 720;
-		int delay = 1000;
-		part1();
-		moveForward(speed, delay);
-		turnRight(270);
-		moveForward(speed, delay);
-		turnLeft(270);
-		moveBackward(speed, delay);
-	}
-	public static void part1(){
-		System.out.println("Assignment 1");
-		Button.waitForAnyPress();
-	}
-	public static void moveForward(int x, int d){
-		Motor.A.setSpeed(x);
-		Motor.B.setSpeed(x);
-		Motor.A.backward();
-		Motor.B.backward();
-		Delay.msDelay(d);
-	}
-	public static void turnRight(int x) {
-		Motor.A.rotate(x);
-	}
-	public static void turnLeft(int x) {
-		Motor.B.rotate(x);
-	}
-	public static void moveBackward(int x, int d){
-		Motor.A.setSpeed(x);
-		Motor.B.setSpeed(x);
-		Motor.A.forward();
-		Motor.B.forward();
-		Delay.msDelay(d);
-	}
-	public static void hit() {
-		touchsensor = EV3TouchSensor(4);
-		
-	}
+public class ca1 {
+    //constants for gyro
+    EV3GyroSensor gyroSensor = new EV3GyroSensor(SensorPort.S3);
+    //constants for touch
+    EV3TouchSensor touch = new EV3TouchSensor(SensorPort.S4);
+    //constants for color
+    EV3ColorSensor colorSensor = new EV3ColorSensor(SensorPort.S1);
+	private static EV3UltrasonicSensor us;
+    //constants for ultraSonic
+    EV3UltrasonicSensor ultraSonic = new EV3UltrasonicSensor(SensorPort.S2);
+
+
+    public static void part1(){ //putting text on screen and waiting for button press
+        System.out.println("Assignment 1");
+        Button.waitForAnyPress();
+    }
+    public static void moveForward(int x, int d){ // moving forward
+        Motor.A.setSpeed(x);
+        Motor.B.setSpeed(x);
+        Motor.A.backward();
+        Motor.B.backward();
+        Delay.msDelay(d);
+    }
+    public static void turnRight(int x) { //turning right
+        Motor.A.rotate(x);
+    }
+    public static void turnLeft(int x) { //turning left
+        Motor.B.rotate(x);
+    }
+    public static void moveBackward(int x, int d){ //moving backwards
+        Motor.A.setSpeed(x);
+        Motor.B.setSpeed(x);
+        Motor.A.forward();
+        Motor.B.forward();
+        Delay.msDelay(d);
+    }
+    //public SampleProvider getDistance(){ //getting distance to object
+    //    SampleProvider distance = ultraSonic.getDistanceMode();
+    //    return distance; //potentially turn into boolean
+    //}
+    public int getColor(){ //getting color
+        int color;
+        color = colorSensor.getColorID();
+        return color; //potentailly turn into boolean
+    }
+
+    public SensorMode hitSurface(){
+        SensorMode isTouching;
+        isTouching = touch.getTouchMode();
+        return isTouching; //boolean???
+    }
+
+    public int readAngle(int value){
+        SampleProvider gyro = gyroSensor.getAngleMode();
+        float [] sample = new float[gyro.sampleSize()];
+        value = (int)sample[0];
+        return value;
+    }
+    
+    public static void main(String[] args) {
+    	
+    	
+        /* plan of execution
+        while loop to move forward until getDistance() == 25cm
+        if true proceed into another while loop
+
+        While angle of gyro not 180 = turn
+        if true proceed into another while loop
+
+        while loop checking for dark surface getColor == (dark)
+        if true proceed into another while loop
+
+        big while loop until hitSurface() == True
+        End
+         */
+    	
+
+    	
+        //actual program
+        //p1
+    	System.out.println("Assignment 1");
+                Button.waitForAnyPress();
+        //us = new EV3UltrasonicSensor(SensorPort.S1);
+        int distance = 0;
+        
+        SampleProvider sp = us.getDistanceMode();
+        // dist = us.getRange(); //does not work, works for everyone else
+        do{
+            float [] sample1 = new float[sp.sampleSize()];//
+        	sp.fetchSample(sample1, 0);//
+        	distance = (int)sample1[0];// Standard implementation now days
+        	//System.out.println(distance);//
+        	Motor.A.rotate(-100,true);
+           	Motor.B.rotate(-100,true);
+        }while(distance > 0.25); //p4
+
+       //p5-------
+       //Turn 180 degrees using the gyroscope to measure angle
+
+        EV3GyroSeonsor sensor = new EV3GyroSensor(SensorPort.S3);
+        int offset = 0;
+
+       do{
+       sp = sensor.getAngleAndRateMode();
+       float [] sample2 = new float[sp.sampleSize()];
+       sensor.reset();
+       sp.fetchSample(sample2, 0);
+       }while(sample2[1] < 180);
+
+       //p6------------
+       //Move forward 20 units  
+     
+      moveForward(50, 20);
+
+       //p7------------
+       //Turn 90 degrees to the left
+       turnLeft(90);
+
+      //p8------------
+      // Move forward until detecting a dark surface underneath
+      EV3ColorSensor color1 = new EV3ColorSensor(SensorPort.S1);
+      sp = color1.getIDMode();
+      int sampleSize = sp.sampleSize();
+
+      do{
+      moveForward(50,1);
+      float [] sample3 = new float[sampleSize];
+      color1.fetchSample(sample3, 0);
+      int colorId = (int)sample3[0];
+      }while(Color.Black != colorId); // p9 Stop
+
+     //p10
+     // Rotate 90 degrees to the left
+     turnLeft(90);
+
+     //p11
+     //Move backward until the touch sensor cause the robot to stop
+     EV3TouchSensor touchSensor = new EV3TouchSensor(SensorPort.S4);
+     SensorMode touch = touchSensor.getTouchMode();
+      do{
+      moveBackward(50, 1);
+     float [] sample4 = new float [touch.sampleSize()];
+     touch.fetchSample(sample4, 0);
+      }while(sample4[0] == 1);
+    
+
+    }
 }
+
